@@ -326,29 +326,15 @@
 				
 				// Apply each validator to the current field
 				foreach ($validators as $validator) {
-					try {
-						// Run the validation check
-						if (!$validator->validate($fieldValue, $request)) {
-							// Validation failed - generate an error message with variable substitution
-							$errors[$fieldName][] = $this->replaceVariablesInErrorString(
-								$validator->getMessage() ?? "Validation failed for {$fieldName}",
-								array_merge($validator->getConditions() ?? [], [
-									'key'   => $fieldName,  // Field name for an error message
-									'value' => $fieldValue, // Actual field value
-								])
-							);
-							
-							// Stop validating this field after first error (fail-fast approach)
-							break;
-						}
-					} catch (\Throwable $e) {
-						// Handle validator execution errors
-						$errors[$fieldName][] = "Validation error occurred for {$fieldName}";
-						
-						// Log the actual error for debugging (assuming you have a logger)
-						// $this->logger?->error("Validator error for field '{$fieldName}': " . $e->getMessage());
-						
-						break;
+					// Run the validation check
+					if (!$validator->validate($fieldValue, $request)) {
+						// Validation failed - generate an error message with variable substitution
+						$errors[$fieldName][] = $this->replaceVariablesInErrorString(
+							$validator->getError(), [
+								'key'   => $fieldName,  // Field name for an error message
+								'value' => $fieldValue, // Actual field value
+							]
+						);
 					}
 				}
 			}
