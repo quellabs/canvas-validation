@@ -1,0 +1,28 @@
+{
+  "name": "quellabs/canvas-validation",
+  "description": "AOP-based form validation package for the Canvas PHP framework providing before-aspect validation interceptors",
+  "keywords": [
+    "framework",
+    "validation",
+    "aop",
+    "canvas",
+    "form",
+    "aspect"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
+  },
+  "require": {
+    "quellabs/contracts": "^1.0",
+    "symfony/http-foundation": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Quellabs\\CanvasValidation\\": "src/"
+    }
+  }
+}
