@@ -35,15 +35,13 @@
 				foreach ($validators as $validator) {
 					if (!$validator->validate($input[$key])) {
 						// If validation fails, create an error message
-						$errors[$key] = $this->replaceVariablesInErrorString(
-							$validator->getError(),
-							array_merge($validator->getConditions(), [
-								'key'   => $key,
-								'value' => $input[$key],
-							])
-						);
+						$errors[$key] = $this->replaceVariablesInErrorString($validator->getError(), [
+							'key'   => $key,
+							'value' => $input[$key],
+						]);
 						
-						break; // Stop validating this field after the first error
+						// Stop validating this field after the first error
+						break;
 					}
 				}
 			}

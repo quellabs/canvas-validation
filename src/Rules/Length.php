@@ -2,7 +2,7 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
 	/**
 	 * Length validation rule class
@@ -10,38 +10,36 @@
 	 * Validates that a string value meets minimum and/or maximum length requirements.
 	 * Supports configurable min/max length conditions and custom error messages.
 	 */
-	class Length implements ValidationRuleInterface {
-		
-		/**
-		 * Array containing validation conditions (min, max, message)
-		 * @var array
-		 */
-		protected array $conditions;
+	class Length extends RulesBase {
 		
 		/**
 		 * Default error message set during validation
-		 * @var string
+		 * @var string|null
 		 */
-		protected string $error;
+		protected ?string $defaultMessage = "";
+		
+		/**
+		 * Minimum value to check
+		 * @var int|null
+		 */
+		private ?int $min;
+		
+		/**
+		 * Maximum value to check
+		 * @var int|null
+		 */
+		private ?int $max;
 		
 		/**
 		 * Length constructor
-		 * @param array $conditions Optional array of validation conditions:
-		 *                         - 'min': minimum required length
-		 *                         - 'max': maximum allowed length
-		 *                         - 'message': custom error message
+		 * @param int|null $min
+		 * @param int|null $max
+		 * @param string|null $message
 		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-			$this->error = "";
-		}
-		
-		/**
-		 * Returns the conditions used in this Rule
-		 * @return array The validation conditions array
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
+		public function __construct(?int $min = null, int $max = null, ?string $message = null) {
+			parent::__construct($message);
+			$this->min = $min;
+			$this->max = $max;
 		}
 		
 		/**
@@ -49,7 +47,7 @@
 		 * @param mixed $value The value to validate (expected to be string)
 		 * @return bool True if validation passes, false otherwise
 		 */
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
 			// Allow empty values and null to pass validation
 			// This follows the principle that length validation should only
 			// apply to non-empty values
@@ -58,19 +56,19 @@
 			}
 			
 			// Check the minimum length requirement if specified
-			if (isset($this->conditions['min'])) {
-				if (strlen($value) < $this->conditions['min']) {
+			if (!is_null($this->min)) {
+				if (strlen($value) < $this->min) {
 					// Set default error message for minimum length violation
-					$this->error = "This value is too short. It should have {{ min }} characters or more.";
+					$this->defaultMessage = "This value is too short. It should have {{ min }} characters or more.";
 					return false;
 				}
 			}
 			
 			// Check the maximum length requirement if specified
-			if (isset($this->conditions['max'])) {
-				if (strlen($value) > $this->conditions['max']) {
+			if (!is_null($this->max)) {
+				if (strlen($value) > $this->max) {
 					// Set default error message for maximum length violation
-					$this->error = "This value is too long. It should have {{ max }} characters or less.";
+					$this->defaultMessage = "This value is too long. It should have {{ max }} characters or less.";
 					return false;
 				}
 			}
@@ -85,11 +83,17 @@
 		 */
 		public function getError(): string {
 			// Return a custom error message if provided in conditions
-			if (!isset($this->conditions["message"])) {
-				return $this->error;
+			if (is_null($this->message)) {
+				return $this->replaceVariablesInErrorString($this->defaultMessage, [
+					"min" => $this->min,
+					"max" => $this->max,
+				]);
 			}
 			
 			// Otherwise, return the default error message set during validation
-			return $this->conditions["message"];
+			return $this->replaceVariablesInErrorString($this->message, [
+				"min" => $this->min,
+				"max" => $this->max,
+			]);
 		}
 	}

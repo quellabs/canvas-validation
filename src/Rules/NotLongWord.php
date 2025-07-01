@@ -2,46 +2,37 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
-	class NotLongWord implements ValidationRuleInterface {
-		
-		protected array $conditions;
-		protected string|int|float $length;
+	class NotLongWord extends RulesBase {
 		
 		/**
-		 * Email constructor
-		 * @param array $conditions
+		 * Max length of each word
+		 * @var int
 		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-			
-			if (isset($this->conditions["length"]) && is_numeric($this->conditions["length"])) {
-				$this->length = $this->conditions["length"];
-			} else {
-				$this->length = 30;
-			}
-		}
+		protected int $length;
 		
 		/**
-		 * Returns the conditions used in this Rule
-		 * @return array
+		 * NotLongWord constructor
+		 * @param int $length
 		 */
-		public function getConditions() : array {
-			return $this->conditions;
+		public function __construct(int $length = 30, ?string $message = null) {
+			parent::__construct($message);
+			$this->length = $length;
+			$this->message = $message;
 		}
 		
 		/**
 		 * Check if any of the words in the text are longer than the specified length.
 		 * If so, return false to signify that the validation failed.
-		 * @param $value
+		 * @param mixed $value
 		 * @return bool
 		 */
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
 			// do not check if value empty
 			if (($value === "") || is_null($value)) {
-                return true;
-            }
+				return true;
+			}
 			
 			// check all words and return false if any of them exceeds the length
 			$words = explode(' ', $value);
@@ -56,10 +47,12 @@
 		}
 		
 		public function getError(): string {
-			if (!isset($this->conditions["message"])) {
-				return "{{ key }}: One of the words exceeds the length of {$this->length}.";
+			if (is_null($this->message)) {
+				return "One of the words exceeds the length of {$this->length}.";
 			}
 			
-			return $this->conditions["message"];
+			return $this->replaceVariablesInErrorString($this->message, [
+				"length" => $this->length,
+			]);
 		}
 	}

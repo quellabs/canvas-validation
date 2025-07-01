@@ -2,39 +2,37 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
-	class ValueIn implements ValidationRuleInterface {
+	class ValueIn extends RulesBase {
 		
-		protected mixed $conditions;
+		/**
+		 * Values to check
+		 * @var array
+		 */
+		private array $values;
 		
 		/**
 		 * ValueIn constructor
-		 * @param array $conditions
+		 * @param array $values
+		 * @param string|null $message
 		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions["values"] ?? [];
-		}
-		
-		/**
-		 * Returns the conditions used in this Rule
-		 * @return array
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
+		public function __construct(array $values, ?string $message=null) {
+			parent::__construct($message);
+			$this->values = $values;
 		}
 		
 		/**
 		 * Perform the validation
-		 * @param $value
+		 * @param mixed $value
 		 * @return bool
 		 */
-		public function validate($value): bool {
-			if (empty($this->conditions["values"]) || ($value == "") || ($value == null)) {
+		public function validate(mixed $value): bool {
+			if (empty($this->values) || ($value == "") || ($value == null)) {
 				return true;
 			}
 			
-			return in_array($value, $this->conditions);
+			return in_array($value, $this->values);
 		}
 		
 		/**
@@ -42,10 +40,10 @@
 		 * @return string
 		 */
 		public function getError(): string {
-			if (!isset($this->conditions["message"])) {
-				return "Value should be any of these: " . implode(",", array_map(function($e) { return "'{$e}'"; }, $this->conditions["values"]));
+			if (is_null($this->message)) {
+				return "Value should be any of these: " . implode(",", array_map(function($e) { return "'{$e}'"; }, $this->values));
 			}
 
-			return $this->conditions["message"];
+			return $this->message;
 		}
 	}

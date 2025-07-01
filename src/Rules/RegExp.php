@@ -2,7 +2,7 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
 	/**
 	 * Regular Expression Validation Rule
@@ -10,13 +10,13 @@
 	 * This class validates input values against a regular expression pattern.
 	 * It implements the ValidationRuleInterface to provide consistent validation behavior.
 	 */
-	class RegExp implements ValidationRuleInterface {
+	class RegExp extends RulesBase {
 		
 		/**
-		 * Array containing validation conditions including the regexp pattern and optional message
-		 * @var array
+		 * Regular expression pattern to check
+		 * @var string
 		 */
-		protected array $conditions;
+		protected string $pattern;
 		
 		/**
 		 * RegExp constructor
@@ -26,18 +26,11 @@
 		 * - 'regexp': The regular expression pattern to match against
 		 * - 'message': Optional custom error message
 		 *
-		 * @param array $conditions Array of validation conditions
+		 * @param string|null $message
 		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-		}
-		
-		/**
-		 * Returns the conditions used in this Rule
-		 * @return array The conditions array containing regexp pattern and optional message
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
+		public function __construct(string $pattern, ?string $message=null) {
+			parent::__construct($message);
+			$this->pattern = $pattern;
 		}
 		
 		/**
@@ -50,15 +43,15 @@
 		 * @param mixed $value The value to validate
 		 * @return bool True if validation passes, false otherwise
 		 */
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
 			// Allow empty values to pass validation (use NotBlank rule for mandatory fields)
-			if (($value === "") || is_null($value) || empty($this->conditions["regexp"])) {
+			if (($value === "") || is_null($value) || empty($this->pattern)) {
 				return true;
 			}
 			
 			// Use preg_match to test the value against the regular expression
 			// Returns true if the pattern matches, false if it doesn't match or if there's an error
-			return preg_match($this->conditions["regexp"], $value) !== false;
+			return preg_match($this->pattern, $value) !== false;
 		}
 		
 		/**
@@ -67,11 +60,10 @@
 		 */
 		public function getError(): string {
 			// Return a custom error message if provided
-			if (!isset($this->conditions["message"])) {
+			if (!isset($this->message)) {
 				return "Regular expression did not match.";
 			}
 			
-			return $this->conditions["message"];
+			return $this->message;
 		}
-		
 	}

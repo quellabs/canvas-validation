@@ -2,24 +2,11 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
-	class Date implements ValidationRuleInterface {
+	class Date extends RulesBase {
 		
 		/**
-		 * @var array Conditions to check
-		 */
-		protected array $conditions;
-		
-		/**
-		 * Email constructor
-		 * @param array $conditions
-		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-		}
-		
-        /**
          * Detects the date format in $string and returns it
          * @url https://stackoverflow.com/questions/43873454/identify-date-format-from-a-string-in-php
          * @param string $date
@@ -65,15 +52,7 @@
             return ($result != $date) ? $result : false;
         }
         
-		/**
-		 * Returns the conditions used in this Rule
-		 * @return array
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
-		}
-		
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
             if (($value === "") || is_null($value)) {
                 return true;
             }
@@ -82,10 +61,10 @@
 		}
 		
 		public function getError(): string {
-			if (!isset($this->conditions["message"])) {
+			if (is_null($this->message)) {
 				return "This value is not a valid date.";
 			}
 			
-			return $this->conditions["message"];
+			return $this->message;
 		}
 	}
