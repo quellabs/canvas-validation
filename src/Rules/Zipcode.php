@@ -2,21 +2,31 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
-	class Zipcode implements ValidationRuleInterface {
+	class Zipcode extends RulesBase {
 		
-		protected array $conditions;
-		protected string $error;
+		
+		/**
+		 * List of zipcode formats per country (ISO2)
+		 * @var array
+		 */
 		protected array $m_zipcode_format;
 		
 		/**
-		 * Email constructor
-		 * @param array $conditions
+		 * Country ISO2 code to check
+		 * @var string
 		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-			$this->error = "";
+		protected string $countryIso2;
+		
+		/**
+		 * Zipcode constructor
+		 * @param string $countryIso2
+		 * @param string|null $message
+		 */
+		public function __construct(string $countryIso2="NL", ?string $message=null) {
+			parent::__construct($message);
+			$this->countryIso2 = $countryIso2;
 			
 			/**
 			 * country code: ISO 3166 2-letter code
@@ -284,14 +294,6 @@
 		}
 		
 		/**
-		 * Returns the conditions used in this Rule
-		 * @return array
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
-		}
-		
-		/**
 		 * Transform zipcode pattern to a regular expression
 		 * @param string $format
 		 * @param bool $ignoreSpaces
@@ -335,25 +337,21 @@
 			return false;
 		}
 		
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
 			// no value, nothing to check
             if (($value === "") || is_null($value)) {
                 return true;
             }
-			
-			// add missing country_iso2
-			if (!isset($this->conditions['iso2'])) {
-				$this->conditions['iso2'] = "NL";
-			}
-			
-			return $this->isZipcodeValid($this->conditions['iso2'], $value);
+
+			// Check zipcode format
+			return $this->isZipcodeValid($this->countryIso2, $value);
 		}
 		
 		public function getError(): string {
-			if (!isset($this->conditions["message"])) {
+			if (is_null($this->message)) {
 				return "This value is not a valid zipcode.";
 			}
 			
-			return $this->conditions["message"];
+			return $this->message;
 		}
 	}

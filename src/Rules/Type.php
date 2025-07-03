@@ -2,7 +2,7 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
 	/**
 	 * Type validation rule class
@@ -10,13 +10,13 @@
 	 * Validates that a value matches a specified type using PHP's built-in type checking functions.
 	 * Supports both is_* functions (e.g., is_string, is_int) and ctype_* functions (e.g., ctype_alpha, ctype_digit).
 	 */
-	class Type implements ValidationRuleInterface {
+	class Type extends RulesBase {
 		
-		/** @var array The validation conditions/configuration */
-		protected array $conditions;
+		/** @var string The type to check */
+		private string $type;
 		
 		/** @var string The error message when validation fails */
-		protected string $error;
+		protected string $defaultMessage = "";
 		
 		/** @var array List of types that can be checked using is_* functions */
 		protected array $is_a_types;
@@ -26,11 +26,12 @@
 		
 		/**
 		 * Type constructor
-		 * @param array $conditions The validation conditions including 'type' and optional 'message'
+		 * @param string $type
+		 * @param string|null $message
 		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-			$this->error = "";
+		public function __construct(string $type, ?string $message=null) {
+			parent::__construct($message);
+			$this->type = $type;
 			
 			// Define types that can be validated using PHP's is_* functions
 			$this->is_a_types = [
@@ -71,39 +72,31 @@
 		}
 		
 		/**
-		 * Returns the conditions used in this Rule
-		 * @return array The validation conditions
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
-		}
-		
-		/**
 		 * Validates the given value against the specified type
 		 * @param mixed $value The value to validate
 		 * @return bool True if validation passes, false otherwise
 		 */
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
 			// Skip validation for empty values (allows optional fields)
 			if ($value == '') {
 				return true;
 			}
 			
 			// Skip validation if no type is specified in conditions
-			if (!isset($this->conditions["type"])) {
+			if (!isset($this->type)) {
 				return true;
 			}
 			
 			// Handle types that use PHP's is_* functions (e.g., is_string, is_int)
-			if (in_array($this->conditions["type"], $this->is_a_types)) {
-				if (!call_user_func("is_{$this->conditions["type"]}", $value)) {
-					$this->error = "This value should be of type {$this->conditions["type"]}";
+			if (in_array($this->type, $this->is_a_types)) {
+				if (!call_user_func("is_{$this->type}", $value)) {
+					$this->defaultMessage = "This value should be of type {$this->type}";
 					return false;
 				}
 			}
 			
 			// Handle types that use PHP's ctype_* functions (e.g., ctype_alpha, ctype_digit)
-			if (in_array($this->conditions["type"], $this->ctype_types)) {
+			if (in_array($this->type, $this->ctype_types)) {
 				// Define user-friendly error messages for each ctype validation
 				$errorMessages = [
 					'alnum' => 'This value should contain only alphanumeric characters.',
@@ -120,8 +113,8 @@
 				];
 				
 				// Perform the ctype validation
-				if (!call_user_func("ctype_{$this->conditions["type"]}", $value)) {
-					$this->error = $errorMessages[$this->conditions["type"]];
+				if (!call_user_func("ctype_{$this->type}", $value)) {
+					$this->defaultMessage = $errorMessages[$this->type];
 					return false;
 				}
 			}
@@ -136,10 +129,10 @@
 		 */
 		public function getError(): string {
 			// Return a custom error message if provided in conditions
-			if (!isset($this->conditions["message"])) {
-				return $this->error;
+			if (is_null($this->message)) {
+				return $this->defaultMessage;
 			}
 			
-			return $this->conditions["message"];
+			return $this->message;
 		}
 	}

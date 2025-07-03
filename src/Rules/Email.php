@@ -2,34 +2,13 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
 	/**
 	 * Class Email
 	 * Implementation of a validation rule for email addresses
 	 */
-	class Email implements ValidationRuleInterface {
-		
-		/**
-		 * Conditions for the validation
-		 */
-		protected array $conditions;
-		
-		/**
-		 * Constructor of the Email class
-		 * @param array $conditions Conditions for the validation
-		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-		}
-		
-		/**
-		 * Retrieves the conditions that are used in this rule
-		 * @return array The conditions for the validation
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
-		}
+	class Email extends RulesBase {
 		
 		/**
 		 * Validates if the value is a valid email address
@@ -52,11 +31,11 @@
 		 */
 		public function getError(): string {
 			// If no custom error message is set, use the default message
-			if (!isset($this->conditions["message"])) {
+			if (is_null($this->message)) {
 				return "This value is not a valid email address.";
 			}
 			
 			// Return the custom error message
-			return $this->conditions["message"];
+			return $this->message;
 		}
 	}

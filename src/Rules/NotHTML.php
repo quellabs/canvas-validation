@@ -2,34 +2,16 @@
 	
 	namespace Quellabs\CanvasValidation\Rules;
 	
-	use Quellabs\CanvasValidation\Contracts\ValidationRuleInterface;
+	use Quellabs\CanvasValidation\Foundation\RulesBase;
 	
-	class NotHTML implements ValidationRuleInterface {
-		
-		protected array $conditions;
-		
-		/**
-		 * Email constructor
-		 * @param array $conditions
-		 */
-		public function __construct(array $conditions = []) {
-			$this->conditions = $conditions;
-		}
-		
-		/**
-		 * Returns the conditions used in this Rule
-		 * @return array
-		 */
-		public function getConditions() : array {
-			return $this->conditions;
-		}
+	class NotHTML extends RulesBase {
 		
 		/**
 		 * Validate method
 		 * @param mixed $value The value to validate
 		 * @return bool Returns true if the value is empty or does not contain any HTML tags, false otherwise
 		 */
-		public function validate($value): bool {
+		public function validate(mixed $value): bool {
 			if (($value === null) || ($value === "")) {
 				return true;
 			}
@@ -53,10 +35,10 @@
 		 * @return string The error message.
 		 */
 		public function getError(): string {
-			if (!isset($this->conditions["message"])) {
-				return "{{ key }}: This value contains illegal html tags.";
+			if (is_null($this->message)) {
+				return "This value contains illegal html tags.";
 			}
 			
-			return $this->conditions["message"];
+			return $this->message;
 		}
 	}
